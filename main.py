@@ -27,17 +27,17 @@ async def on_ready():
   # スラッシュコマンドを同期 
  await tree.sync()
 #ちょっとテスト用
-#@client.event
-#async def on_message(message):
- #if message.author == client.user:
-  #return
- #if message.content == "テスト":
-  #await message.reply("成功")
+@client.event
+async def on_message(message):
+ if message.author == client.user:
+  return
+ if message.content == "テスト":
+  await message.reply("成功")
 #おみくじコマンド
 @tree.command(name="omikuji", description="おみくじを引きます")
 async def omikuji(interaction: discord.Interaction):
  await interaction.response.send_message(f'今日のの運勢は"{OM[random.randrange(len(OM))]}"です')
-
+#封印されし読み上げ機能
 #@tree.command(name="join",description="ボイスチャンネルに参加")
 #async def join(ctx):
  #voicechannelを取得
