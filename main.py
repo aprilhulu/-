@@ -1,4 +1,6 @@
 import random
+import csv
+import requests
 import discord
 from discord import app_commands
 import os
@@ -11,6 +13,9 @@ client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 OM = ['大吉', '吉', '中吉', '小吉', '末吉', '凶', '大凶']
 tokumei = "匿名ちゃねら"
+TOKEN = os.getenv("DISCORD_TOKEN")
+API = os.getenv("API_KEY")
+AGENT = os.getenv("AGENT_KEY")
 
 #起動確認
 @client.event
@@ -20,7 +25,17 @@ async def on_ready():
  await tree.sync()
 #ちょっとテスト用
 @client.event
-async def on_message(message):
+async def on_message(message: discord.Message):
+ if message.author.bot:
+  return
+ if type(message.channel) == discord.DMChannel :
+  date=[
+ [message.content, message.author]
+]
+
+  with open('data.csv', 'a', newline='') as csvfile:
+   writer = csv.writer(csvfile)
+   writer.writerows(date)
  if message.content == "テスト":
   await message.reply("成功")
 #DMを匿名化して匿名ちゃねらで叫ぶ
@@ -41,6 +56,23 @@ async def on_message(message):
 #おみくじコマンド
 @tree.command(name="omikuji", description="おみくじを引きます")
 async def omikuji(interaction: discord.Interaction):
- await interaction.response.send_message(f'今日のの運勢は"{OM[random.randrange(len(OM))]}"です')
+ await interaction.response.send_message(f'今日の運勢は{OM[random.randrange(len(OM))]}です')
 
-client.run(os.getenv("DISCORD_TOKEN"))
+@tree.command(name="gpd",description="chatgptとお話し")
+async def gpd(interaction: discord.Interaction,text:str=None):
+    await interaction.response.defer()
+    url = "https://api-mebo.dev/api"
+    headers = {'content-type': 'application/json'}
+    item_data = {
+            "api_key": API,
+            "agent_id": AGENT,
+            "utterance": text
+  }
+    r = requests.post(url,json=item_data,headers=headers)
+    print(r)
+    print(r.json()["utterance"])
+    print(r.json()["bestResponse"]["utterance"])
+    e=r,r.json()["utterance"],r.json()["bestResponse"]["utterance"]
+    await interaction.followup.send(e)
+
+client.run(TOKEN)
